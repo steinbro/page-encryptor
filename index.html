@@ -1,0 +1,23 @@
+<html>
+    <meta charset="UTF-8" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+    <script src="data.js"></script>
+
+    <script type="text/javascript">
+        if (typeof data != 'undefined') {
+            var decoded = null;
+            while (decoded === null) {            
+                var passphrase = prompt("Site password:")
+                try {
+                    var decrypted = CryptoJS.AES.decrypt(data, passphrase);
+                    decoded = decrypted.toString(CryptoJS.enc.Utf8);
+                } catch {
+                }
+            }
+            document.write(decoded);
+        } else {
+            document.write('No content found.')
+        }
+    </script>
+</html>    
+
