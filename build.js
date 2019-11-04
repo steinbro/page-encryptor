@@ -16,11 +16,13 @@ var asBase64DataURI = function(path) {
 // of index.html with all asset references replaced with base64-encoded data:
 // URIs.
 var indexWithInlineAssets = function(workdir) {
-    let assets = fs.readdirSync(workdir);
+    let assets = fs.readdirSync(workdir, {withFileTypes: true});
     let index = fs.readFileSync(path.join(workdir, 'index.html'), 'utf8');
     for (i in assets) {
-        let dataURI = asBase64DataURI(path.join(workdir, assets[i]));
-        index = index.replace(assets[i], dataURI);
+        if (assets[i].isFile()) {
+            let dataURI = asBase64DataURI(path.join(workdir, assets[i].name));
+            index = index.replace(assets[i].name, dataURI);
+        }
     }
     return index;    
 }
