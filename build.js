@@ -1,3 +1,5 @@
+// page-encryptor (https://github.com/steinbro/page-encryptor)
+// Copyright (c) 2019 Daneil W. Steinbrook
 var fs = require('fs')
   , mime = require('mime-types')
   , path = require('path')
