@@ -5,28 +5,33 @@ var fs = require('fs')
   , path = require('path')
   , CryptoJS = require("crypto-js");
 
-// Given a file path, return the contents as a base64-encoded data: URI.
-var asBase64DataURI = function(path) {
-    let data = fs.readFileSync(path, 'binary');
+// Convert data to base64 data: URI. Filename is needed for proper mimetype.
+var asBase64DataURI = function(data, filename) {
     let buff = new Buffer.from(data, 'binary');
     let base64data = buff.toString('base64');
-    let mimetype = mime.lookup(path);
+    let mimetype = mime.lookup(filename);
     return 'data:' + mimetype + ';base64,' + base64data;
 };
+
+// Recursively replace asset references with encoded data.
+var recurseReplaceAssets = function(workdir, filename, assets) {
+    let data = fs.readFileSync(path.join(workdir, filename), 'binary');
+    for (var i in assets) {
+        if (assets[i].isFile() && data.includes(assets[i].name)) {
+            console.debug('In ' + filename + ', found ' + assets[i].name);
+            referencedData = recurseReplaceAssets(workdir, assets[i].name, assets);
+            data = data.replace(assets[i].name, asBase64DataURI(referencedData, assets[i].name));
+        }
+    }
+    return data;
+}
 
 // Given a folder containing index.html plus other assets, return the contents
 // of index.html with all asset references replaced with base64-encoded data:
 // URIs.
 var indexWithInlineAssets = function(workdir) {
     let assets = fs.readdirSync(workdir, {withFileTypes: true});
-    let index = fs.readFileSync(path.join(workdir, 'index.html'), 'utf8');
-    for (i in assets) {
-        if (assets[i].isFile()) {
-            let dataURI = asBase64DataURI(path.join(workdir, assets[i].name));
-            index = index.replace(assets[i].name, dataURI);
-        }
-    }
-    return index;    
+    return recurseReplaceAssets(workdir, 'index.html', assets);
 }
 
 if (process.argv.length < 4) {
